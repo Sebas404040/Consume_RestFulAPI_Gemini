@@ -1,4 +1,6 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 document.addEventListener('DOMContentLoaded', function () {
   let elements = {
