@@ -1,7 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-
 document.addEventListener('DOMContentLoaded', function () {
   let elements = {
     modelSelect: document.getElementById('modelSelect'),
