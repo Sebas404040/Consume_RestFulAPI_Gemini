@@ -8,17 +8,13 @@ document.addEventListener('DOMContentLoaded', function () {
     sendBtn: document.getElementById('sendBtn')
   };
 
-  let API_KEY = process.env.GOOGLE_API;
   let DEFAULT_MODEL = 'gemini-2.5-flash';
 
-  // Historial de la conversación
   let conversation = [];
 
   elements.clearChatBtn.addEventListener('click', function () {
     let confirmDelete = confirm('¿Borrar toda la conversación?');
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirmDelete) return;
     conversation = [];
     renderMessages();
   });
@@ -26,38 +22,24 @@ document.addEventListener('DOMContentLoaded', function () {
   elements.prompt.addEventListener('input', function () {
     elements.prompt.style.height = 'auto';
     let newHeight = elements.prompt.scrollHeight;
-    if (newHeight > 200) {
-      newHeight = 200;
-    }
+    if (newHeight > 200) newHeight = 200;
     elements.prompt.style.height = newHeight + 'px';
   });
 
   elements.composer.addEventListener('submit', function (e) {
     e.preventDefault();
-    let text = elements.prompt.value;
-    if (text) {
-      text = text.trim();
-    }
-    if (!text) {
-      return;
-    }
+    let text = elements.prompt.value.trim();
+    if (!text) return;
 
-    if (!API_KEY || API_KEY === process.env.GOOGLE_API) {
-      alert('Configura tu API key en script.js');
-      return;
-    }
-
-    let model = elements.modelSelect.value;
-    if (!model) {
-      model = DEFAULT_MODEL;
-    }
+    let model = elements.modelSelect.value || DEFAULT_MODEL;
 
     appendMessage('user', text, false);
     elements.prompt.value = '';
     elements.prompt.style.height = 'auto';
 
     setSendingState(true);
-    generateContent(API_KEY, model, conversation, function (error, replyText) {
+    
+    generateContent(model, conversation, function (error, replyText) {
       if (error) {
         appendMessage('model', 'Error: ' + error, true);
       } else {
@@ -106,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
       wrapper.appendChild(bubble);
       elements.messages.appendChild(wrapper);
 
-      i = i + 1;
+      i++;
     }
   }
 
@@ -114,56 +96,40 @@ document.addEventListener('DOMContentLoaded', function () {
     elements.messages.scrollTop = elements.messages.scrollHeight;
   }
 
-  // Llamada básica con XMLHttpRequest
-  function generateContent(apiKey, model, contents, callback) {
-    let url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey);
-    let payload = { contents: contents };
+  function generateContent(model, contents, callback) {
+    let url = 'http://localhost:3000/chat';
 
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    let lastMessage = contents[contents.length - 1].parts[0].text;
+    
+    let history = contents.slice(0, -1);
 
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          let data;
-          try {
-            data = JSON.parse(xhr.responseText);
-          } catch (e) {
-            callback('Respuesta no es JSON válido', null);
-            return;
-          }
-
-          let text = '';
-          if (data && data.candidates && data.candidates[0]) {
-            let candidate = data.candidates[0];
-            if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
-              text = candidate.content.parts[0].text;
-            }
-          }
-          if (!text) {
-            text = '(sin contenido)';
-          }
-          callback(null, text);
-        } else {
-          let errorMsg = 'HTTP ' + xhr.status;
-          try {
-            let errJson = JSON.parse(xhr.responseText);
-            if (errJson && errJson.error && errJson.error.message) {
-              errorMsg = errorMsg + ': ' + errJson.error.message;
-            }
-          } catch (e2) {
-            // ignore
-          }
-          callback(errorMsg, null);
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        prompt: lastMessage, 
+        history: history 
+      })
+    })
+      .then(res => {
+        if (!res.ok) {
+            return res.text().then(text => { throw new Error(text) });
         }
-      }
-    };
-
-    try {
-      xhr.send(JSON.stringify(payload));
-    } catch (sendErr) {
-      callback('No se pudo enviar la solicitud', null);
-    }
+        return res.json();
+      })
+      .then(data => {
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            let text = data.candidates[0].content.parts[0].text;
+            callback(null, text);
+        } else if (data.error) {
+            callback(data.error, null);
+        } else {
+            callback("Respuesta inesperada del servidor", null);
+        }
+      })
+      .catch(err => {
+        console.error("Error en fetch:", err);
+        callback(err.message || "Error de conexión con el servidor", null);
+      });
   }
 });
