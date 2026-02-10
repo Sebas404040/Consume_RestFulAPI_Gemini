@@ -1,0 +1,24 @@
+{
+  "name": "consume_restfulapi_gemini",
+  "version": "1.0.0",
+  "description": "Creación de un chatbot mediante la API de Gemini.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sebas404040/Consume_RestFulAPI_Gemini.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Sebas404040/Consume_RestFulAPI_Gemini/issues"
+  },
+  "homepage": "https://github.com/Sebas404040/Consume_RestFulAPI_Gemini#readme",
+  "dependencies": {
+    "dotenv": "^17.2.4"
+  }
+}

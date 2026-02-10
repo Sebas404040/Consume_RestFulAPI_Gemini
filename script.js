@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 document.addEventListener('DOMContentLoaded', function () {
   let elements = {
     modelSelect: document.getElementById('modelSelect'),
@@ -8,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     sendBtn: document.getElementById('sendBtn')
   };
 
-  let API_KEY = 'LAAPIKEYVAACA';
+  let API_KEY = process.env.GOOGLE_API;
   let DEFAULT_MODEL = 'gemini-2.5-flash';
 
   // Historial de la conversación
@@ -42,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (!API_KEY || API_KEY === 'REEMPLAZA_CON_TU_API_KEY') {
+    if (!API_KEY || API_KEY === process.env.GOOGLE_API) {
       alert('Configura tu API key en script.js');
       return;
     }
