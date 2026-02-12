@@ -96,40 +96,29 @@ document.addEventListener('DOMContentLoaded', function () {
     elements.messages.scrollTop = elements.messages.scrollHeight;
   }
 
-  function generateContent(model, contents, callback) {
-    let url = 'http://localhost:3000/chat';
+const sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+
+function generateContent(model, contents, callback) {
+    let url = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/chat-23'; 
 
     let lastMessage = contents[contents.length - 1].parts[0].text;
-    
-    let history = contents.slice(0, -1);
 
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        prompt: lastMessage, 
-        history: history 
+        chatInput: lastMessage,
+        sessionId: sessionId 
       })
     })
-      .then(res => {
-        if (!res.ok) {
-            return res.text().then(text => { throw new Error(text) });
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            let text = data.candidates[0].content.parts[0].text;
-            callback(null, text);
-        } else if (data.error) {
-            callback(data.error, null);
+    .then(res => res.json())
+    .then(data => {
+        if (data.respuesta) {
+            callback(null, data.respuesta);
         } else {
-            callback("Respuesta inesperada del servidor", null);
+            callback("Error en respuesta", null);
         }
-      })
-      .catch(err => {
-        console.error("Error en fetch:", err);
-        callback(err.message || "Error de conexión con el servidor", null);
-      });
-  }
+    })
+    .catch(err => callback(err.message, null));
+}
 });
