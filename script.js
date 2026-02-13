@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       let avatar = document.createElement('div');
       avatar.className = 'avatar';
-      avatar.textContent = msg.role === 'user' ? 'Tú' : 'G';
+      avatar.textContent = msg.role === 'user' ? 'Tú' : 'U';
 
       let bubble = document.createElement('div');
       bubble.className = 'bubble';
