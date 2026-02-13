@@ -1,3 +1,5 @@
+const HISTORY_URL = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/get-history'; 
+
 document.addEventListener('DOMContentLoaded', function () {
   let elements = {
     modelSelect: document.getElementById('modelSelect'),
@@ -130,4 +132,28 @@ function generateContent(model, contents, callback) {
     })
     .catch(err => callback(err.message, null));
 }
+
+function loadChatHistory() {
+    let currentSession = localStorage.getItem('chatSessionId');
+    if (!currentSession) return;
+
+    fetch(`${HISTORY_URL}?sessionId=${currentSession}`, { method: 'GET' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.history && Array.isArray(data.history)) {
+                elements.messages.innerHTML = '';
+
+                data.history.forEach(msg => {
+                    let role = 'model';
+                    if (msg.role === 'user' || msg.type === 'human') {
+                        role = 'user';
+                    }
+
+                    appendMessage(role, msg.content || msg.data.content, false);
+                });
+            }
+        })
+        .catch(err => console.error("Error recuperando chat:", err));
+}
+loadChatHistory();
 });
