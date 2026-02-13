@@ -133,14 +133,18 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch(err => callback(err.message, null));
   }
 
+  // Reemplaza TODA tu función loadChatHistory por esto:
   function loadChatHistory() {
     let currentSession = localStorage.getItem('chatSessionId');
     if (!currentSession) return;
 
+    console.log("Intentando recuperar historial para:", currentSession); // Chismoso 1
+
     fetch(`${HISTORY_URL}?sessionId=${currentSession}`, {
       method: 'GET',
       headers: {
-        'ngrok-skip-browser-warning': 'true' 
+        'ngrok-skip-browser-warning': 'true', 
+        'Content-Type': 'application/json'
       }
     })
       .then(res => {
@@ -148,15 +152,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return res.json();
       })
       .then(data => {
+        console.log("Datos recibidos:", data); 
+
         if (data.history && Array.isArray(data.history)) {
-          elements.messages.innerHTML = '';
+          elements.messages.innerHTML = ''; 
 
           data.history.forEach(msg => {
             let role = 'model';
             if (msg.role === 'user' || msg.type === 'human') {
               role = 'user';
             }
-            
+
             let content = msg.content || (msg.data && msg.data.content) || "";
 
             appendMessage(role, content, false);
