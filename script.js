@@ -100,7 +100,12 @@ document.addEventListener('DOMContentLoaded', function () {
     elements.messages.scrollTop = elements.messages.scrollHeight;
   }
 
-const sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+let sessionId = localStorage.getItem('chatSessionId');
+
+if (!sessionId) {
+    sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('chatSessionId', sessionId);
+}
 
 function generateContent(model, contents, callback) {
     let url = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/chat-23'; 
