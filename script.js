@@ -1,4 +1,4 @@
-const HISTORY_URL = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/get-history'; 
+const HISTORY_URL = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/get-history';
 
 document.addEventListener('DOMContentLoaded', function () {
   let elements = {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     elements.prompt.style.height = 'auto';
 
     setSendingState(true);
-    
+
     generateContent(model, conversation, function (error, replyText) {
       if (error) {
         appendMessage('model', 'Error: ' + error, true);
@@ -85,9 +85,9 @@ document.addEventListener('DOMContentLoaded', function () {
         bubbleText = msg.parts[0].text;
       }
       if (msg.role === 'model') {
-          bubble.innerHTML = marked.parse(bubbleText);
+        bubble.innerHTML = marked.parse(bubbleText);
       } else {
-          bubble.textContent = bubbleText;
+        bubble.textContent = bubbleText;
       }
 
       wrapper.appendChild(avatar);
@@ -102,58 +102,69 @@ document.addEventListener('DOMContentLoaded', function () {
     elements.messages.scrollTop = elements.messages.scrollHeight;
   }
 
-let sessionId = localStorage.getItem('chatSessionId');
+  let sessionId = localStorage.getItem('chatSessionId');
 
-if (!sessionId) {
+  if (!sessionId) {
     sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('chatSessionId', sessionId);
-}
+  }
 
-function generateContent(model, contents, callback) {
-    let url = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/chat-23'; 
+  function generateContent(model, contents, callback) {
+    let url = 'https://unlicentiously-hedonistic-kristy.ngrok-free.dev/webhook/chat-23';
 
     let lastMessage = contents[contents.length - 1].parts[0].text;
 
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         chatInput: lastMessage,
-        sessionId: sessionId 
+        sessionId: sessionId
       })
     })
-    .then(res => res.json())
-    .then(data => {
+      .then(res => res.json())
+      .then(data => {
         if (data.respuesta) {
-            callback(null, data.respuesta);
+          callback(null, data.respuesta);
         } else {
-            callback("Error en respuesta", null);
+          callback("Error en respuesta", null);
         }
-    })
-    .catch(err => callback(err.message, null));
-}
+      })
+      .catch(err => callback(err.message, null));
+  }
 
-function loadChatHistory() {
+  function loadChatHistory() {
     let currentSession = localStorage.getItem('chatSessionId');
     if (!currentSession) return;
 
+    fetch(`${HISTORY_URL}?sessionId=${currentSession}`, {
+      method: 'GET',
+      headers: {
+        'ngrok-skip-browser-warning': 'true'
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+
     fetch(`${HISTORY_URL}?sessionId=${currentSession}`, { method: 'GET' })
-        .then(res => res.json())
-        .then(data => {
-            if (data.history && Array.isArray(data.history)) {
-                elements.messages.innerHTML = '';
+      .then(res => res.json())
+      .then(data => {
+        if (data.history && Array.isArray(data.history)) {
+          elements.messages.innerHTML = '';
 
-                data.history.forEach(msg => {
-                    let role = 'model';
-                    if (msg.role === 'user' || msg.type === 'human') {
-                        role = 'user';
-                    }
-
-                    appendMessage(role, msg.content || msg.data.content, false);
-                });
+          data.history.forEach(msg => {
+            let role = 'model';
+            if (msg.role === 'user' || msg.type === 'human') {
+              role = 'user';
             }
-        })
-        .catch(err => console.error("Error recuperando chat:", err));
-}
-loadChatHistory();
+
+            appendMessage(role, msg.content || msg.data.content, false);
+          });
+        }
+      })
+      .catch(err => console.error("Error recuperando chat:", err));
+  }
+  loadChatHistory();
 });
