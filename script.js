@@ -82,7 +82,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if (msg && msg.parts && msg.parts[0] && msg.parts[0].text) {
         bubbleText = msg.parts[0].text;
       }
-      bubble.textContent = bubbleText;
+      if (msg.role === 'model') {
+          bubble.innerHTML = marked.parse(bubbleText);
+      } else {
+          bubble.textContent = bubbleText;
+      }
 
       wrapper.appendChild(avatar);
       wrapper.appendChild(bubble);
