@@ -140,16 +140,13 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch(`${HISTORY_URL}?sessionId=${currentSession}`, {
       method: 'GET',
       headers: {
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true' 
       }
     })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
       })
-
-    fetch(`${HISTORY_URL}?sessionId=${currentSession}`, { method: 'GET' })
-      .then(res => res.json())
       .then(data => {
         if (data.history && Array.isArray(data.history)) {
           elements.messages.innerHTML = '';
@@ -159,12 +156,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (msg.role === 'user' || msg.type === 'human') {
               role = 'user';
             }
+            
+            let content = msg.content || (msg.data && msg.data.content) || "";
 
-            appendMessage(role, msg.content || msg.data.content, false);
+            appendMessage(role, content, false);
           });
         }
       })
       .catch(err => console.error("Error recuperando chat:", err));
   }
-  loadChatHistory();
 });
